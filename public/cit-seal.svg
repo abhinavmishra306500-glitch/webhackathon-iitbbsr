@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- CIT Official Circular University Seal -->
+  <circle cx="50" cy="50" r="46" stroke="#38BDF8" stroke-width="2.5" stroke-dasharray="3 3" opacity="0.8" />
+  <circle cx="50" cy="50" r="42" stroke="#60A5FA" stroke-width="1.8" />
+  <circle cx="50" cy="50" r="32" fill="#1E3A8A" fill-opacity="0.5" stroke="#93C5FD" stroke-width="1.2" />
+  
+  <!-- Gear spokes / cog teeth around the perimeter -->
+  <g stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round">
+    <line x1="50" y1="4" x2="50" y2="8" />
+    <line x1="50" y1="92" x2="50" y2="96" />
+    <line x1="4" y1="50" x2="8" y2="50" />
+    <line x1="92" y1="50" x2="96" y2="50" />
+    <line x1="17.4" y1="17.4" x2="20.3" y2="20.3" />
+    <line x1="79.7" y1="79.7" x2="82.6" y2="82.6" />
+    <line x1="17.4" y1="82.6" x2="20.3" y2="79.7" />
+    <line x1="79.7" y1="20.3" x2="82.6" y2="17.4" />
+  </g>
+  
+  <!-- Central Emblem: Open Book & Torch of Knowledge -->
+  <path d="M50 42V60M50 60C45 57 38 57 32 59V44C38 42 45 42 50 45C55 42 62 42 68 44V59C62 57 55 57 50 60Z" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Flame atop book -->
+  <path d="M50 32C52 35 53 38 50 41C47 38 48 35 50 32Z" fill="#F59E0B" stroke="#FDE047" stroke-width="1" />
+  
+  <!-- Laurel leaves -->
+  <path d="M28 50C25 58 30 68 40 72" stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round" />
+  <path d="M72 50C75 58 70 68 60 72" stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round" />
+</svg>
