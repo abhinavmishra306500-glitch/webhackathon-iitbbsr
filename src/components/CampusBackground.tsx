@@ -104,15 +104,12 @@ export const CampusBackground: React.FC<CampusBackgroundProps> = ({ onLoaded }) 
         }}
       />
 
-      {/* Light, natural cinematic overlay:
-          - Preserves realistic daylight, fountain, and CIT architecture
-          - Provides clean contrast for text without muddy dark slop
-      */}
+      {/* Natural daylight overlay: keeps campus bright, fountain crisp and background visible through liquid glass */}
       <div 
-        className="absolute inset-0 bg-gradient-to-r from-slate-950/40 via-transparent to-slate-950/45" 
+        className="absolute inset-0 bg-gradient-to-r from-slate-950/40 via-transparent to-transparent" 
       />
       <div 
-        className="absolute inset-0 bg-gradient-to-b from-slate-950/30 via-transparent to-slate-950/40" 
+        className="absolute inset-0 bg-gradient-to-b from-slate-950/25 via-transparent to-slate-950/30" 
       />
     </div>
   );

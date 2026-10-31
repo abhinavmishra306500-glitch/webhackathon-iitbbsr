@@ -184,10 +184,10 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
 
           {/* Clean Card Header */}
           <div className="mb-4">
-            <h3 className="text-2xl font-bold tracking-tight text-white font-display">
+            <h3 className="text-2xl font-bold tracking-tight text-white font-display liquid-text-shadow">
               Welcome Back
             </h3>
-            <p className="text-xs sm:text-sm text-slate-200/90 mt-1 font-normal">
+            <p className="text-xs sm:text-sm text-white/95 mt-1 font-medium liquid-text-shadow">
               Sign in to access your campus workspace.
             </p>
           </div>
@@ -195,12 +195,12 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
           {/* Clean Role Switcher Tabs */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-semibold tracking-wider text-slate-300 uppercase">
+              <span className="text-[10px] font-semibold tracking-wider text-white uppercase liquid-text-shadow">
                 Portal Role
               </span>
             </div>
 
-            <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-white/5 border border-white/20">
+            <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-white/10 backdrop-blur-sm border border-white/30 shadow-inner">
               {(Object.keys(ROLES_DATA) as UserRole[]).map((roleKey) => {
                 const role = ROLES_DATA[roleKey];
                 const isSelected = selectedRole === roleKey;
@@ -220,10 +220,10 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                     type="button"
                     onClick={() => handleSelectRole(roleKey)}
                     title={role.label}
-                    className={`py-1.5 px-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 text-center truncate ${
+                    className={`py-1.5 px-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 text-center truncate ${
                       isSelected
-                        ? 'bg-blue-600 text-white shadow-sm font-semibold'
-                        : 'text-slate-300 hover:text-white hover:bg-white/10'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-white/80 hover:text-white hover:bg-white/15'
                     }`}
                   >
                     {shortLabel}
@@ -237,11 +237,11 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
           {errorMessage && (
             <div
               ref={errorRef}
-              className="mb-3.5 p-2.5 rounded-xl bg-rose-950/60 border border-rose-400/30 text-rose-200 text-xs flex items-start gap-2"
+              className="mb-3.5 p-2.5 rounded-xl bg-rose-950/70 border border-rose-400/50 text-rose-100 text-xs flex items-start gap-2 shadow-lg backdrop-blur-md"
             >
-              <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <ShieldAlert className="w-4 h-4 text-rose-300 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <span className="font-medium leading-tight block">{errorMessage}</span>
+                <span className="font-semibold leading-tight block">{errorMessage}</span>
               </div>
             </div>
           )}
@@ -252,12 +252,12 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
             <div className="animate-field space-y-1">
               <label
                 htmlFor="regIdOrEmail"
-                className="block text-[11px] font-semibold text-slate-200 tracking-wider uppercase"
+                className="block text-[11px] font-semibold text-white tracking-wider uppercase liquid-text-shadow"
               >
                 Registration ID / Email
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-300">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/80">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -287,12 +287,12 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
             <div className="animate-field space-y-1">
               <label
                 htmlFor="password"
-                className="block text-[11px] font-semibold text-slate-200 tracking-wider uppercase"
+                className="block text-[11px] font-semibold text-white tracking-wider uppercase liquid-text-shadow"
               >
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-300">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/80">
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
@@ -313,7 +313,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-300 hover:text-white transition-colors focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-white/80 hover:text-white transition-colors focus:outline-none"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
                 >
@@ -334,9 +334,9 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border border-white/30 bg-white/10 text-blue-600 focus:ring-0 cursor-pointer accent-blue-600"
+                  className="w-3.5 h-3.5 rounded border border-white/40 bg-white/10 text-blue-600 focus:ring-0 cursor-pointer accent-blue-600"
                 />
-                <span className="text-xs text-slate-200 group-hover:text-white transition-colors">
+                <span className="text-xs text-white/90 group-hover:text-white transition-colors liquid-text-shadow">
                   Remember Me
                 </span>
               </label>
@@ -344,18 +344,18 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
               <button
                 type="button"
                 onClick={() => setIsForgotPasswordOpen(true)}
-                className="text-xs text-blue-300 hover:text-blue-200 font-medium transition-colors hover:underline"
+                className="text-xs text-blue-200 hover:text-white font-medium transition-colors hover:underline liquid-text-shadow"
               >
                 Forgot Password?
               </button>
             </div>
 
-            {/* Sign In Button with Subtle Glow */}
+            {/* Sign In Button with Liquid Sheen Glow */}
             <div className="animate-field pt-1.5">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative w-full py-2.5 sm:py-3 px-4 rounded-xl font-semibold text-xs sm:text-sm text-white overflow-hidden transition-all duration-200 shadow-md bg-blue-600 hover:bg-blue-500 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                className="group relative w-full py-2.5 sm:py-3 px-4 rounded-xl font-semibold text-xs sm:text-sm text-white overflow-hidden transition-all duration-200 shadow-lg shadow-blue-900/40 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 border border-blue-400/40 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <div className="relative flex items-center justify-center gap-2">
                   {isLoading ? (
