@@ -11,6 +11,7 @@ import { ApprovalsPage } from './pages/ApprovalsPage';
 import { RoomManagementPage } from './pages/RoomManagementPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { DatasetManagementPage } from './pages/DatasetManagementPage';
+import { Campus3DPage } from './pages/Campus3DPage';
 import { LoginPage } from './pages/LoginPage';
 import type { UserRole, UserSession } from './types';
 
@@ -140,6 +141,24 @@ const AppRoutes: React.FC = () => {
               onLogout={handleLogout}
             >
               <VenueBookingPage />
+            </DashboardLayout>
+          )
+        }
+      />
+
+      {/* Interactive 3D Campus Environment & Visual Booking */}
+      <Route
+        path="/campus-3d"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
+            <DashboardLayout
+              currentRole={currentRole}
+              onRoleChange={handleRoleChange}
+              onLogout={handleLogout}
+            >
+              <Campus3DPage />
             </DashboardLayout>
           )
         }

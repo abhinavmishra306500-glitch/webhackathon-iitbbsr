@@ -12,6 +12,7 @@ import {
   BarChart2,
   Database,
   ChevronRight,
+  Compass,
 } from 'lucide-react';
 import type { UserRole } from '../../types';
 
@@ -31,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
   { name: 'Timetable Management', path: '/timetable', icon: Calendar, allowedRoles: ['admin', 'coordinator', 'faculty'] },
   { name: 'Exam Scheduler', path: '/exam-scheduler', icon: ClipboardList, allowedRoles: ['admin', 'coordinator'] },
   { name: 'Venue Booking', path: '/venue-booking', icon: MapPin, allowedRoles: ['admin', 'coordinator', 'faculty', 'club_rep'] },
+  { name: '3D Campus Map', path: '/campus-3d', icon: Compass, allowedRoles: ['admin', 'coordinator', 'faculty', 'club_rep'] },
   { name: 'Rescheduling', path: '/rescheduling', icon: RefreshCw, allowedRoles: ['admin', 'coordinator', 'faculty'] },
   { name: 'AI Assistant', path: '/ai-assistant', icon: Sparkles, allowedRoles: ['admin', 'coordinator', 'faculty', 'club_rep'] },
   { name: 'Approvals', path: '/approvals', icon: CheckCircle, allowedRoles: ['admin', 'coordinator', 'club_rep'] },

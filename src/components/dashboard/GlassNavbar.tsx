@@ -42,6 +42,8 @@ export const GlassNavbar: React.FC<GlassNavbarProps> = ({
         return 'Exam Scheduler';
       case '/venue-booking':
         return 'Venue Booking';
+      case '/campus-3d':
+        return '3D Campus Map & Visual Booking';
       case '/rescheduling':
         return 'Rescheduling';
       case '/ai-assistant':

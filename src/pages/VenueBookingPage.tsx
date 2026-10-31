@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { MapPin, Users, Check, Building, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Users, Check, Building, Sparkles, Compass, ArrowRight } from 'lucide-react';
 
 export const VenueBookingPage: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedVenue, setSelectedVenue] = useState('Main Auditorium');
   const [eventName, setEventName] = useState('');
   const [eventDate, setEventDate] = useState('2026-11-05');
@@ -38,6 +40,48 @@ export const VenueBookingPage: React.FC = () => {
             <p className="text-xs text-slate-300">Reserve auditoriums, seminar halls, and smart labs across Chilika campus</p>
           </div>
         </div>
+
+        {/* PROMINENT "VISUAL 3D BOOKING" BUTTON */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/campus-3d')}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-extrabold flex items-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.5)] border border-cyan-300/40 transition-all transform hover:scale-105 active:scale-95 group"
+          >
+            <Compass className="w-4 h-4 text-white group-hover:rotate-45 transition-transform" />
+            <span>Visual 3D Booking</span>
+            <ArrowRight className="w-3.5 h-3.5 text-cyan-200" />
+          </button>
+        </div>
+      </div>
+
+      {/* Visual 3D Banner */}
+      <div
+        onClick={() => navigate('/campus-3d')}
+        className="p-4 sm:p-5 rounded-2xl liquid-glass-card border-cyan-400/40 bg-gradient-to-r from-blue-950/40 via-cyan-950/30 to-slate-900/40 flex items-center justify-between gap-4 cursor-pointer group hover:border-cyan-400 transition-all shadow-[0_0_20px_rgba(6,182,212,0.15)]"
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.4)] group-hover:scale-110 transition-transform">
+            <Compass className="w-6 h-6 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-white group-hover:text-cyan-200 transition-colors">
+                Interactive 3D Campus Visual Booking
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500 text-slate-950">
+                3D SPATIAL
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-0.5">
+              Fly through the full CIT campus model, click individual academic buildings, auditoriums & arena to inspect seating and book live in 3D.
+            </p>
+          </div>
+        </div>
+
+        <button className="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 text-xs font-bold shrink-0 group-hover:bg-cyan-500 group-hover:text-slate-950 transition-colors flex items-center gap-1.5">
+          <span>Open 3D</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
