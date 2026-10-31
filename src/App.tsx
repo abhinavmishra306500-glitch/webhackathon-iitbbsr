@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from './components/dashboard/DashboardLayout';
 import { OverviewPage } from './pages/OverviewPage';
 import { TimetablePage } from './pages/TimetablePage';
@@ -14,28 +14,48 @@ import { DatasetManagementPage } from './pages/DatasetManagementPage';
 import { LoginPage } from './pages/LoginPage';
 import type { UserRole, UserSession } from './types';
 
-export const App: React.FC = () => {
-  const [currentRole, setCurrentRole] = useState<UserRole>('admin');
+// Inner wrapper to access navigate
+const AppRoutes: React.FC = () => {
+  const navigate = useNavigate();
+
+  const [currentRole, setCurrentRole] = useState<UserRole>(() => {
+    return (localStorage.getItem('cit_role') as UserRole) || 'admin';
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('cit_authenticated') === 'true';
+  });
 
   const handleLoginSuccess = (newSession: UserSession) => {
     setCurrentRole(newSession.role);
+    setIsAuthenticated(true);
+    localStorage.setItem('cit_role', newSession.role);
+    localStorage.setItem('cit_authenticated', 'true');
+    navigate('/');
   };
 
   const handleLogout = () => {
-    // Navigation to /login handled by GlassNavbar
+    setIsAuthenticated(false);
+    localStorage.removeItem('cit_authenticated');
+    navigate('/login');
   };
 
   const handleRoleChange = (newRole: UserRole) => {
     setCurrentRole(newRole);
+    localStorage.setItem('cit_role', newRole);
   };
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Main Dashboard Overview - Exact Reference Design */}
-        <Route
-          path="/"
-          element={
+    <Routes>
+      {/* 1. Main Route:
+          - If NOT logged in: opens the Cinematic CIT Login Page!
+          - If logged in: opens the CampusSync Liquid Glass Dashboard! */}
+      <Route
+        path="/"
+        element={
+          !isAuthenticated ? (
+            <LoginPage onLoginSuccess={handleLoginSuccess} />
+          ) : (
             <DashboardLayout
               currentRole={currentRole}
               onRoleChange={handleRoleChange}
@@ -43,18 +63,41 @@ export const App: React.FC = () => {
             >
               <OverviewPage currentRole={currentRole} />
             </DashboardLayout>
-          }
-        />
+          )
+        }
+      />
 
-        <Route
-          path="/dashboard"
-          element={<Navigate to="/" replace />}
-        />
+      {/* Explicit Login Route */}
+      <Route
+        path="/login"
+        element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
+      />
 
-        {/* 1. Timetable Management */}
-        <Route
-          path="/timetable"
-          element={
+      {/* Dashboard Route */}
+      <Route
+        path="/dashboard"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
+            <DashboardLayout
+              currentRole={currentRole}
+              onRoleChange={handleRoleChange}
+              onLogout={handleLogout}
+            >
+              <OverviewPage currentRole={currentRole} />
+            </DashboardLayout>
+          )
+        }
+      />
+
+      {/* 1. Timetable Management */}
+      <Route
+        path="/timetable"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
             <DashboardLayout
               currentRole={currentRole}
               onRoleChange={handleRoleChange}
@@ -62,13 +105,17 @@ export const App: React.FC = () => {
             >
               <TimetablePage />
             </DashboardLayout>
-          }
-        />
+          )
+        }
+      />
 
-        {/* 2. Exam Scheduler */}
-        <Route
-          path="/exam-scheduler"
-          element={
+      {/* 2. Exam Scheduler */}
+      <Route
+        path="/exam-scheduler"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
             <DashboardLayout
               currentRole={currentRole}
               onRoleChange={handleRoleChange}
@@ -76,13 +123,17 @@ export const App: React.FC = () => {
             >
               <ExamSchedulerPage />
             </DashboardLayout>
-          }
-        />
+          )
+        }
+      />
 
-        {/* 3. Venue Booking */}
-        <Route
-          path="/venue-booking"
-          element={
+      {/* 3. Venue Booking */}
+      <Route
+        path="/venue-booking"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
             <DashboardLayout
               currentRole={currentRole}
               onRoleChange={handleRoleChange}
@@ -90,13 +141,17 @@ export const App: React.FC = () => {
             >
               <VenueBookingPage />
             </DashboardLayout>
-          }
-        />
+          )
+        }
+      />
 
-        {/* 4. Rescheduling */}
-        <Route
-          path="/rescheduling"
-          element={
+      {/* 4. Rescheduling */}
+      <Route
+        path="/rescheduling"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
             <DashboardLayout
               currentRole={currentRole}
               onRoleChange={handleRoleChange}
@@ -104,13 +159,17 @@ export const App: React.FC = () => {
             >
               <ReschedulingPage />
             </DashboardLayout>
-          }
-        />
+          )
+        }
+      />
 
-        {/* 5. AI Assistant */}
-        <Route
-          path="/ai-assistant"
-          element={
+      {/* 5. AI Assistant */}
+      <Route
+        path="/ai-assistant"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
             <DashboardLayout
               currentRole={currentRole}
               onRoleChange={handleRoleChange}
@@ -118,13 +177,17 @@ export const App: React.FC = () => {
             >
               <AiAssistantPage />
             </DashboardLayout>
-          }
-        />
+          )
+        }
+      />
 
-        {/* 6. Approvals */}
-        <Route
-          path="/approvals"
-          element={
+      {/* 6. Approvals */}
+      <Route
+        path="/approvals"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
             <DashboardLayout
               currentRole={currentRole}
               onRoleChange={handleRoleChange}
@@ -132,13 +195,17 @@ export const App: React.FC = () => {
             >
               <ApprovalsPage currentRole={currentRole} />
             </DashboardLayout>
-          }
-        />
+          )
+        }
+      />
 
-        {/* 7. Room Management */}
-        <Route
-          path="/rooms"
-          element={
+      {/* 7. Room Management */}
+      <Route
+        path="/rooms"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
             <DashboardLayout
               currentRole={currentRole}
               onRoleChange={handleRoleChange}
@@ -146,13 +213,17 @@ export const App: React.FC = () => {
             >
               <RoomManagementPage />
             </DashboardLayout>
-          }
-        />
+          )
+        }
+      />
 
-        {/* 8. Analytics */}
-        <Route
-          path="/analytics"
-          element={
+      {/* 8. Analytics */}
+      <Route
+        path="/analytics"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
             <DashboardLayout
               currentRole={currentRole}
               onRoleChange={handleRoleChange}
@@ -160,13 +231,17 @@ export const App: React.FC = () => {
             >
               <AnalyticsPage />
             </DashboardLayout>
-          }
-        />
+          )
+        }
+      />
 
-        {/* 9. Dataset Management */}
-        <Route
-          path="/datasets"
-          element={
+      {/* 9. Dataset Management */}
+      <Route
+        path="/datasets"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : (
             <DashboardLayout
               currentRole={currentRole}
               onRoleChange={handleRoleChange}
@@ -174,18 +249,20 @@ export const App: React.FC = () => {
             >
               <DatasetManagementPage />
             </DashboardLayout>
-          }
-        />
+          )
+        }
+      />
 
-        {/* Dedicated Cinematic CIT Login Page */}
-        <Route
-          path="/login"
-          element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
-        />
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+};
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+export const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
     </BrowserRouter>
   );
 };
