@@ -5,19 +5,16 @@ import {
   Sun,
   Sunset,
   Moon,
-  Building2,
   Users,
   Layers,
-  MapPin,
   CheckCircle2,
   Calendar,
   X,
   Compass,
-  Sparkles,
   Info,
 } from 'lucide-react';
 import { Campus3DScene } from '../components/campus3d/Campus3DScene';
-import { CAMPUS_BUILDINGS, CampusBuilding } from '../components/campus3d/campusData';
+import { CAMPUS_BUILDINGS, type CampusBuilding } from '../components/campus3d/campusData';
 
 export const Campus3DPage: React.FC = () => {
   const navigate = useNavigate();

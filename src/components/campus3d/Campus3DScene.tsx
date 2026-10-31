@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import gsap from 'gsap';
-import { CAMPUS_BUILDINGS, CampusBuilding } from './campusData';
+import { CAMPUS_BUILDINGS, type CampusBuilding } from './campusData';
 
 interface Campus3DSceneProps {
   onSelectBuilding: (building: CampusBuilding | null) => void;
