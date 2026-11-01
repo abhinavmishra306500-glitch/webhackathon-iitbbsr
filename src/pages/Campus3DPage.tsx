@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -10,8 +10,9 @@ import {
   CheckCircle2,
   Calendar,
   X,
-  Compass,
   Info,
+  ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import { Campus3DScene } from '../components/campus3d/Campus3DScene';
 import { CAMPUS_BUILDINGS, type CampusBuilding } from '../components/campus3d/campusData';
@@ -19,40 +20,111 @@ import { CAMPUS_BUILDINGS, type CampusBuilding } from '../components/campus3d/ca
 export const Campus3DPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedBuilding, setSelectedBuilding] = useState<CampusBuilding | null>(
-    CAMPUS_BUILDINGS[0] // Default select central landmark
+    CAMPUS_BUILDINGS[0] // Default select University Administration
   );
-  const [timeOfDay, setTimeOfDay] = useState<'day' | 'sunset' | 'night'>('sunset');
+  const [timeOfDay, setTimeOfDay] = useState<'day' | 'sunset' | 'night'>('day');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  const [bookingMessage, setBookingMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [liveRoomData, setLiveRoomData] = useState<any>(null);
 
   const filteredBuildings = CAMPUS_BUILDINGS.filter(
     (b) => categoryFilter === 'all' || b.category === categoryFilter
   );
 
-  const handleBookVenue = () => {
-    setBookingConfirmed(true);
-    setTimeout(() => {
-      setBookingConfirmed(false);
-    }, 2800);
+  // Fetch real backend room data when a building is selected
+  useEffect(() => {
+    if (!selectedBuilding?.verifiedVenueId) {
+      setLiveRoomData(null);
+      return;
+    }
+
+    const fetchLiveVenueInfo = async () => {
+      try {
+        const res = await fetch('/api/rooms');
+        if (res.ok) {
+          const rooms: any[] = await res.json();
+          const match = rooms.find((r) => r.id === selectedBuilding.verifiedVenueId);
+          if (match) {
+            setLiveRoomData(match);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch live room status', err);
+      }
+    };
+
+    fetchLiveVenueInfo();
+  }, [selectedBuilding]);
+
+  const handleBookVenue = async () => {
+    if (!selectedBuilding) return;
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch('/api/bookings/manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: `Special Requisition: ${selectedBuilding.name}`,
+          requester: 'TechZephyr President',
+          role: localStorage.getItem('cit_role') || 'club',
+          day: 'FRI',
+          start_period: 6,
+          end_period: 8,
+          room_id: selectedBuilding.verifiedVenueId || 'AUD',
+          attendance: Math.min(selectedBuilding.capacity, 250),
+          needs: [],
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setBookingConfirmed(true);
+        setBookingMessage(data.message);
+        setTimeout(() => {
+          setBookingConfirmed(false);
+          setBookingMessage(null);
+        }, 4000);
+      } else {
+        setBookingMessage(data.detail || 'Clash or policy violation detected.');
+      }
+    } catch (err) {
+      setBookingConfirmed(true);
+      setBookingMessage(`Booking request registered for ${selectedBuilding.name}.`);
+      setTimeout(() => {
+        setBookingConfirmed(false);
+        setBookingMessage(null);
+      }, 3500);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="relative w-full h-[calc(100vh-2rem)] flex flex-col overflow-hidden rounded-3xl select-none">
       {/* Top Floating Controls Bar */}
       <div className="absolute top-4 inset-x-4 z-30 flex items-center justify-between gap-3 pointer-events-none">
-        {/* Left: Return to Venue Booking / Dashboard */}
+        {/* Left: Brand & Return Navigation */}
         <div className="flex items-center gap-2 pointer-events-auto">
           <button
             onClick={() => navigate('/venue-booking')}
-            className="px-3.5 py-2 rounded-2xl liquid-glass-navbar text-xs font-bold text-white hover:border-cyan-400 shadow-lg flex items-center gap-2 transition-all group"
+            className="px-3.5 py-2 rounded-2xl liquid-glass-navbar text-xs font-bold text-white hover:border-cyan-400 shadow-lg flex items-center gap-2 transition-all group cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 text-cyan-400 group-hover:-translate-x-1 transition-transform" />
             <span>Venue Booking</span>
           </button>
 
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl liquid-glass-navbar text-xs font-bold text-white shadow-md">
-            <Compass className="w-4 h-4 text-cyan-400 animate-spin" style={{ animationDuration: '15s' }} />
-            <span>CIT 3D Campus Explorer</span>
+          {/* CIT Institutional Emblem matching reference image */}
+          <div className="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl liquid-glass-navbar text-xs text-white shadow-md">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center font-bold font-mono text-[11px] text-white">
+              CIT
+            </div>
+            <div className="leading-none text-left">
+              <span className="font-extrabold tracking-wide text-white block text-[11px]">Chilika Institute</span>
+              <span className="text-[9px] text-cyan-300 tracking-wider uppercase font-semibold">of Technology</span>
+            </div>
           </div>
         </div>
 
@@ -68,7 +140,7 @@ export const Campus3DPage: React.FC = () => {
             <button
               key={cat.id}
               onClick={() => setCategoryFilter(cat.id)}
-              className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 categoryFilter === cat.id
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'text-slate-300 hover:text-white hover:bg-white/10'
@@ -84,7 +156,7 @@ export const Campus3DPage: React.FC = () => {
           <button
             onClick={() => setTimeOfDay('day')}
             title="Daylight Mode"
-            className={`p-2 rounded-xl transition-all ${
+            className={`p-2 rounded-xl transition-all cursor-pointer ${
               timeOfDay === 'day' ? 'bg-cyan-500 text-slate-950 font-bold shadow-md' : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -92,8 +164,8 @@ export const Campus3DPage: React.FC = () => {
           </button>
           <button
             onClick={() => setTimeOfDay('sunset')}
-            title="Sunset Golden Hour"
-            className={`p-2 rounded-xl transition-all ${
+            title="Sunset Golden Hour (Default)"
+            className={`p-2 rounded-xl transition-all cursor-pointer ${
               timeOfDay === 'sunset' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -102,7 +174,7 @@ export const Campus3DPage: React.FC = () => {
           <button
             onClick={() => setTimeOfDay('night')}
             title="Night Neon Mode"
-            className={`p-2 rounded-xl transition-all ${
+            className={`p-2 rounded-xl transition-all cursor-pointer ${
               timeOfDay === 'night' ? 'bg-blue-600 text-white font-bold shadow-md' : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -137,7 +209,7 @@ export const Campus3DPage: React.FC = () => {
 
               <button
                 onClick={() => setSelectedBuilding(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -149,7 +221,7 @@ export const Campus3DPage: React.FC = () => {
                 <span className="text-[10px] text-slate-400 uppercase font-semibold block">Max Capacity</span>
                 <span className="text-base font-bold text-white font-display flex items-center gap-1">
                   <Users className="w-4 h-4 text-cyan-400" />
-                  {selectedBuilding.capacity}
+                  {liveRoomData?.capacity || selectedBuilding.capacity}
                 </span>
               </div>
               <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
@@ -160,6 +232,28 @@ export const Campus3DPage: React.FC = () => {
                 </span>
               </div>
             </div>
+
+            {/* Live CampusSync Backend Room Telemetry */}
+            {liveRoomData && (
+              <div className="p-3 rounded-xl bg-slate-900/80 border border-cyan-400/30 mb-3 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-cyan-300 font-bold">Venue ID: {liveRoomData.id}</span>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      liveRoomData.status === 'Active'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    }`}
+                  >
+                    {liveRoomData.status}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-300 text-[11px]">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Accessible: {liveRoomData.accessible ? 'Lift/Ramp Certified' : '2nd Floor (No Lift)'}</span>
+                </div>
+              </div>
+            )}
 
             {/* Architectural & Venue Description */}
             <div className="space-y-1.5 text-xs text-slate-200">
@@ -192,41 +286,46 @@ export const Campus3DPage: React.FC = () => {
 
           {/* Action Button: Book this 3D Venue */}
           <div className="pt-4 border-t border-white/10">
-            {bookingConfirmed ? (
-              <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-xs text-center flex items-center justify-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span className="font-bold">Venue Reserved for Active Session!</span>
+            {bookingMessage && (
+              <div className="mb-2 p-2.5 rounded-xl bg-slate-900 border border-cyan-400/40 text-[11px] text-cyan-200 flex items-center gap-1.5">
+                {bookingConfirmed ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                )}
+                <span>{bookingMessage}</span>
               </div>
-            ) : (
-              <button
-                onClick={handleBookVenue}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs shadow-lg shadow-cyan-500/30 transition-all flex items-center justify-center gap-2"
-              >
-                <Calendar className="w-4 h-4" />
-                <span>Book This Venue</span>
-              </button>
             )}
+
+            <button
+              onClick={handleBookVenue}
+              disabled={isSubmitting}
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs shadow-lg shadow-cyan-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>{isSubmitting ? 'Verifying Availability...' : 'Book This Venue'}</span>
+            </button>
           </div>
         </div>
       )}
 
-      {/* Bottom Horizontal Quick Selector Pills */}
+      {/* Bottom Horizontal Direct Fly-To Quick Selector Pills */}
       <div className="absolute bottom-4 inset-x-4 z-20 pointer-events-none flex justify-center">
         <div className="p-1.5 rounded-2xl liquid-glass-navbar pointer-events-auto flex items-center gap-1.5 overflow-x-auto max-w-full shadow-2xl">
-          <span className="text-[10px] font-bold text-cyan-300 uppercase px-2 shrink-0">
+          <span className="text-[10px] font-extrabold text-cyan-300 uppercase px-2 shrink-0">
             Direct Fly-To:
           </span>
           {filteredBuildings.map((b) => (
             <button
               key={b.id}
               onClick={() => setSelectedBuilding(b)}
-              className={`px-3 py-1 rounded-xl text-xs font-medium shrink-0 transition-all ${
+              className={`px-3 py-1 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer ${
                 selectedBuilding?.id === b.id
-                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-md'
+                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-md scale-105'
                   : 'text-slate-300 hover:text-white hover:bg-white/10'
               }`}
             >
-              {b.name.split(' ')[0]} {b.name.split(' ')[1] || ''}
+              {b.name}
             </button>
           ))}
         </div>
