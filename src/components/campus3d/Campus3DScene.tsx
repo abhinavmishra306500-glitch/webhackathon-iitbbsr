@@ -13,7 +13,7 @@ interface Campus3DSceneProps {
 export const Campus3DScene: React.FC<Campus3DSceneProps> = ({
   onSelectBuilding,
   selectedBuildingId,
-  timeOfDay = 'day',
+  timeOfDay = 'sunset',
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -40,8 +40,8 @@ export const Campus3DScene: React.FC<Campus3DSceneProps> = ({
     // 1. Scene
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    scene.background = new THREE.Color(0xdff0f8);
-    scene.fog = new THREE.FogExp2(0xdff0f8, 0.0016);
+    scene.background = new THREE.Color(0xfb923c);
+    scene.fog = new THREE.FogExp2(0xfdba74, 0.002);
 
     // 2. Camera: Isometric-like high aerial angle matching reference photo
     const camera = new THREE.PerspectiveCamera(40, width / height, 1, 2000);
@@ -69,14 +69,14 @@ export const Campus3DScene: React.FC<Campus3DSceneProps> = ({
     controls.target.set(0, 0, 20); // Center on central campus
     controlsRef.current = controls;
 
-    // 5. Lighting
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x445544, 0.7);
+    // 5. Lighting: Sunset Golden Hour
+    const hemiLight = new THREE.HemisphereLight(0xfed7aa, 0x7c2d12, 0.6);
     hemiLight.position.set(0, 200, 0);
     scene.add(hemiLight);
     hemiLightRef.current = hemiLight;
 
-    const dirLight = new THREE.DirectionalLight(0xfff6e5, 1.6);
-    dirLight.position.set(150, 220, 120);
+    const dirLight = new THREE.DirectionalLight(0xf97316, 1.8);
+    dirLight.position.set(-180, 70, -80);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;

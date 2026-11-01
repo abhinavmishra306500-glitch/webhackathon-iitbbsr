@@ -21,7 +21,7 @@ export const Campus3DPage: React.FC = () => {
   const [selectedBuilding, setSelectedBuilding] = useState<CampusBuilding | null>(
     CAMPUS_BUILDINGS[0] // Default select central landmark
   );
-  const [timeOfDay, setTimeOfDay] = useState<'day' | 'sunset' | 'night'>('day');
+  const [timeOfDay, setTimeOfDay] = useState<'day' | 'sunset' | 'night'>('sunset');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
