@@ -81,7 +81,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     placeholder="e.g. yourname@cit.ac.in"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl glass-input text-white text-sm placeholder:text-slate-500 outline-none"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white text-slate-900 font-semibold text-sm placeholder:text-slate-400 border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none"
                     autoFocus
                   />
                 </div>

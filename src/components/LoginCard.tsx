@@ -257,7 +257,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                 Registration ID / Email
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/80">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -270,8 +270,8 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                   }}
                   disabled={isLoading}
                   placeholder="CIT-ADM-001 or name@cit.ac.in"
-                  className={`w-full pl-10 pr-3 py-2.5 rounded-xl glass-input text-white text-xs sm:text-sm placeholder:text-slate-400/80 outline-none ${
-                    fieldErrors.identifier ? 'border-rose-400/80' : ''
+                  className={`w-full pl-10 pr-3 py-2.5 rounded-xl bg-white text-slate-900 font-semibold text-xs sm:text-sm placeholder:text-slate-400 caret-blue-600 shadow-sm border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition-all ${
+                    fieldErrors.identifier ? 'border-rose-400/80 ring-2 ring-rose-400/30' : ''
                   }`}
                   autoComplete="username"
                 />
@@ -292,7 +292,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/80">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
@@ -305,15 +305,15 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                   }}
                   disabled={isLoading}
                   placeholder="Enter security password"
-                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl glass-input text-white text-xs sm:text-sm placeholder:text-slate-400/80 outline-none ${
-                    fieldErrors.password ? 'border-rose-400/80' : ''
+                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl bg-white text-slate-900 font-semibold text-xs sm:text-sm placeholder:text-slate-400 caret-blue-600 shadow-sm border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition-all ${
+                    fieldErrors.password ? 'border-rose-400/80 ring-2 ring-rose-400/30' : ''
                   }`}
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-white/80 hover:text-white transition-colors focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-800 transition-colors focus:outline-none"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
                 >
