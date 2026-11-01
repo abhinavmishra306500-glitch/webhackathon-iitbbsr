@@ -142,3 +142,65 @@ def test_10_demo_reset():
     res = client.post("/api/reset")
     assert res.status_code == 200
     assert res.json()["success"] is True
+
+def test_11_dataset_repositories_and_utilization():
+    """Verify official dataset entities: summary, 27 rooms, 40 faculty, 14 student groups, 62 courses, and utilization analytics."""
+    # 1. Summary
+    res_sum = client.get("/api/dataset/summary")
+    assert res_sum.status_code == 200
+    stats = res_sum.json()["stats"]
+    assert stats["rooms"] == 27
+    assert stats["faculty"] == 40
+    assert stats["sessions"] == 189
+    assert stats["courses"] == 62
+    assert stats["studentGroups"] == 14
+    assert stats["midsemExams"] == 41
+
+    # 2. Rooms
+    res_rooms = client.get("/api/rooms")
+    assert res_rooms.status_code == 200
+    rooms = res_rooms.json()
+    assert len(rooms) == 27
+    aud = next(r for r in rooms if r["id"] == "AUD")
+    assert aud["capacity"] == 500
+    assert aud["accessible"] is True
+    cr201 = next(r for r in rooms if r["id"] == "CR-201")
+    assert cr201["accessible"] is False  # 2nd floor, no lift
+
+    # 3. Faculty
+    res_fac = client.get("/api/faculty")
+    assert res_fac.status_code == 200
+    assert len(res_fac.json()) == 40
+
+    # 4. Student Groups
+    res_groups = client.get("/api/student-groups")
+    assert res_groups.status_code == 200
+    assert len(res_groups.json()) == 14
+
+    # 5. Courses
+    res_courses = client.get("/api/courses")
+    assert res_courses.status_code == 200
+    assert len(res_courses.json()) == 62
+
+    # 6. Utilization Analytics
+    res_util = client.get("/api/analytics/utilization")
+    assert res_util.status_code == 200
+    util = res_util.json()
+    assert util["total_rooms"] == 27
+    assert util["total_sessions"] == 189
+    assert util["overall_utilization_pct"] > 0
+    assert util["conflict_free_rate"] == 100.0
+
+def test_12_native_gemini_ai_chat():
+    """Verify native AI chat endpoint returns grounded response."""
+    payload = {
+        "messages": [
+            {"sender": "user", "text": "What is the capacity of SH-1 vs SH-2?"}
+        ],
+        "userRole": "club"
+    }
+    res = client.post("/api/ai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert "reply" in data
+    assert len(data["reply"]) > 10

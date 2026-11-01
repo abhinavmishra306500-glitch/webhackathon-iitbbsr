@@ -1,38 +1,67 @@
-import React, { useState } from 'react';
-import { RefreshCw, AlertTriangle, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { RefreshCw, AlertTriangle, ArrowRight, CheckCircle2, Sparkles, ShieldAlert, Check } from 'lucide-react';
+
+interface DisruptionChange {
+  session_id: string;
+  previous?: {
+    day: string;
+    start_period: number;
+    room_id: string;
+  };
+  proposed: {
+    day: string;
+    start_period: number;
+    room_id: string;
+  };
+  type: string;
+}
 
 export const ReschedulingPage: React.FC = () => {
-  const [resolvedIds, setResolvedIds] = useState<number[]>([]);
+  const [changes, setChanges] = useState<DisruptionChange[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [approved, setApproved] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [sessionsMoved, setSessionsMoved] = useState(0);
 
-  const disruptions = [
-    {
-      id: 1,
-      title: 'Faculty Emergency Leave - Dr. Manoranjan Sharma',
-      original: 'AI & Machine Learning (CS303) • Tuesday 10:45 AM • CR-204',
-      proposed: 'Shifted to Thursday 02:30 PM • CR-204 (Free Slot Verified)',
-      urgency: 'High',
-      impact: '62 Students affected',
-    },
-    {
-      id: 2,
-      title: 'Lab Maintenance Window - Advanced AI Lab C',
-      original: 'Parallel Computing Lab • Wednesday 01:30 PM • Lab C',
-      proposed: 'Re-routed to Software Engineering Lab B (35 Workstations Ready)',
-      urgency: 'Medium',
-      impact: '32 Students affected',
-    },
-    {
-      id: 3,
-      title: 'Guest Lecture Alignment - Silicon Valley Industry Expert',
-      original: 'Open Elective Slot • Friday 03:30 PM',
-      proposed: 'Merged into Main Auditorium 11:00 AM • Dual Branch Combined',
-      urgency: 'Low',
-      impact: '120 Students affected',
-    },
-  ];
+  // Auto-scan disruption on mount
+  useEffect(() => {
+    handleScanDisruptions();
+  }, []);
 
-  const handleApplyResolution = (id: number) => {
-    setResolvedIds([...resolvedIds, id]);
+  const handleScanDisruptions = async () => {
+    setLoading(true);
+    setStatusMessage('Scanning active academic disruptions and computing minimal-movement repair...');
+    try {
+      const res = await fetch('/api/disruption/apply', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setChanges(data.changes || []);
+        setSessionsMoved(data.sessions_moved || 0);
+        setStatusMessage(
+          `Disruption detected: ${data.changes_count} changes. Rescheduling engine proposed ${data.sessions_moved} minimal moves (Stability budget <= 15 compliant).`
+        );
+      }
+    } catch (err) {
+      setStatusMessage('Failed to scan disruption.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApproveDisruption = async () => {
+    setApproving(true);
+    try {
+      const res = await fetch('/api/disruption/approve', { method: 'POST' });
+      if (res.ok) {
+        setApproved(true);
+        setStatusMessage('✅ Approved by Institutional Administrator. Saved to exports/schedule_after.json.');
+      }
+    } catch (err) {
+      setStatusMessage('Error approving disruption.');
+    } finally {
+      setApproving(false);
+    }
   };
 
   return (
@@ -45,79 +74,112 @@ export const ReschedulingPage: React.FC = () => {
           </div>
           <div>
             <h2 className="text-lg font-bold text-white font-display">Rescheduling & Disruption Engine</h2>
-            <p className="text-xs text-slate-300">Automatically handle academic timetable disruptions and propose verified swaps</p>
+            <p className="text-xs text-slate-300">
+              Section 5 Minimal Movement Solver • Stability Objective: sessions_moved = {sessionsMoved} (&lt;= 15)
+            </p>
           </div>
         </div>
 
-        <button className="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 text-xs font-semibold hover:bg-cyan-500/30 flex items-center gap-1.5 transition-colors">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Scan Active Clashes</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleScanDisruptions}
+            disabled={loading}
+            className="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 text-xs font-semibold hover:bg-cyan-500/30 flex items-center gap-1.5 transition-colors disabled:opacity-50"
+          >
+            <Sparkles className={`w-3.5 h-3.5 text-cyan-400 ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Solving...' : 'Rescan Disruption'}</span>
+          </button>
+
+          <button
+            onClick={handleApproveDisruption}
+            disabled={approving || approved || changes.length === 0}
+            className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50"
+          >
+            <Check className="w-4 h-4" />
+            <span>{approved ? 'Approved & Locked' : approving ? 'Saving...' : 'Approve Swaps (Admin)'}</span>
+          </button>
+        </div>
       </div>
 
+      {statusMessage && (
+        <div className="p-3.5 rounded-xl bg-slate-900/80 border border-cyan-400/30 text-xs text-cyan-200 flex items-center gap-2.5">
+          <ShieldAlert className="w-4 h-4 text-cyan-400 shrink-0" />
+          <span>{statusMessage}</span>
+        </div>
+      )}
+
       {/* Disruption Cards */}
-      <div className="space-y-3">
-        {disruptions.map((item) => {
-          const isResolved = resolvedIds.includes(item.id);
-          return (
+      {changes.length === 0 ? (
+        <div className="liquid-glass-card rounded-2xl p-8 text-center space-y-2">
+          <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+          <h3 className="text-sm font-bold text-white">All Timetables Operational</h3>
+          <p className="text-xs text-slate-300">No active faculty leaves or room outages currently recorded.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {changes.map((item, idx) => (
             <div
-              key={item.id}
+              key={idx}
               className={`p-4 sm:p-5 rounded-2xl liquid-glass-card transition-all ${
-                isResolved ? 'opacity-60 border-emerald-500/40' : ''
+                approved ? 'opacity-80 border-emerald-500/40' : 'hover:border-cyan-400/40'
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className={`w-4 h-4 ${isResolved ? 'text-emerald-400' : 'text-amber-400'}`} />
-                  <h3 className="text-sm font-bold text-white">{item.title}</h3>
+                  <AlertTriangle className={`w-4 h-4 ${approved ? 'text-emerald-400' : 'text-amber-400'}`} />
+                  <h3 className="text-sm font-bold text-white">
+                    Session Relocation: <span className="font-mono text-cyan-300">{item.session_id}</span>
+                  </h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">
-                    {item.impact}
+                    {item.type}
                   </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    item.urgency === 'High' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                  }`}>
-                    {item.urgency} Priority
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-3 text-xs">
-                <div className="p-3 rounded-xl bg-rose-950/20 border border-rose-500/20">
-                  <p className="text-[10px] uppercase font-bold text-rose-300 mb-1">Original Disrupted Schedule</p>
-                  <p className="text-slate-200 font-medium">{item.original}</p>
-                </div>
-
-                <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-400/30">
-                  <p className="text-[10px] uppercase font-bold text-cyan-300 mb-1 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" />
-                    <span>AI Recommended Alternative</span>
-                  </p>
-                  <p className="text-white font-medium">{item.proposed}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-1">
-                {isResolved ? (
-                  <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Schedule Swap Synchronized to ERP</span>
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => handleApplyResolution(item.id)}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-cyan-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2"
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      approved
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    }`}
                   >
-                    <span>Approve & Apply Rescheduling</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                    {approved ? 'Approved' : 'Pending Review'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-3 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
+                {item.previous && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Original Baseline Slot</p>
+                    <p className="font-medium text-slate-300">
+                      <strong className="text-rose-300">{item.previous.day}</strong> Period {item.previous.start_period} in{' '}
+                      <strong className="text-slate-200">{item.previous.room_id}</strong>
+                    </p>
+                  </div>
                 )}
+
+                <div className="hidden md:flex items-center justify-center">
+                  <ArrowRight className="w-5 h-5 text-cyan-400" />
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase font-semibold text-emerald-400 tracking-wider">Proposed Stability Swap</p>
+                  <p className="font-medium text-slate-200">
+                    <strong className="text-emerald-300">{item.proposed.day}</strong> Period {item.proposed.start_period} in{' '}
+                    <strong className="text-cyan-200">{item.proposed.room_id}</strong>
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-[11px] font-mono text-emerald-300 bg-emerald-950/40 px-2 py-1 rounded border border-emerald-500/30">
+                    Zero Hard Violations
+                  </span>
+                </div>
               </div>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

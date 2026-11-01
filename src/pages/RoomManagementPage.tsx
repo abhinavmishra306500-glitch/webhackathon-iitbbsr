@@ -1,25 +1,66 @@
-import React, { useState } from 'react';
-import { Building2, Search, Monitor, Wind, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Building2, Search, Monitor, Wind, Shield, Accessibility, AlertTriangle } from 'lucide-react';
+
+interface RoomItem {
+  id: string;
+  name: string;
+  building: string;
+  type: string;
+  capacity: number;
+  accessible: boolean;
+  allowed_uses: string[];
+  features: string[];
+  ac: boolean;
+  projector: boolean;
+  pa_system?: boolean;
+  stage?: boolean;
+  status: string;
+  status_details?: string;
+}
 
 export const RoomManagementPage: React.FC = () => {
   const [filterType, setFilterType] = useState('All');
   const [search, setSearch] = useState('');
+  const [rooms, setRooms] = useState<RoomItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const rooms = [
-    { id: 'CR-101', name: 'Lecture Hall 101', block: 'Block A', capacity: 90, type: 'Lecture Hall', ac: true, projector: true, status: 'Active' },
-    { id: 'CR-102', name: 'Lecture Hall 102', block: 'Block A', capacity: 90, type: 'Lecture Hall', ac: true, projector: true, status: 'Active' },
-    { id: 'CR-204', name: 'Smart Theatre 204', block: 'Block B', capacity: 120, type: 'Smart Theatre', ac: true, projector: true, status: 'Active' },
-    { id: 'LAB-AI', name: 'Advanced AI & GPU Lab', block: 'Block C', capacity: 55, type: 'Computer Lab', ac: true, projector: true, status: 'Active' },
-    { id: 'LAB-SE', name: 'Software Engg. Lab B', block: 'Block C', capacity: 45, type: 'Computer Lab', ac: true, projector: true, status: 'Active' },
-    { id: 'AUD-MN', name: 'Main CIT Auditorium', block: 'Central Wing', capacity: 600, type: 'Auditorium', ac: true, projector: true, status: 'Active' },
-    { id: 'CR-305', name: 'Seminar Room 305', block: 'Block B', capacity: 60, type: 'Seminar Room', ac: true, projector: true, status: 'Maintenance' },
-  ];
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const res = await fetch('/api/rooms');
+        if (res.ok) {
+          const data = await res.json();
+          setRooms(data);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch rooms from backend, using dataset snapshot', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRooms();
+  }, []);
+
+  const getCategory = (type: string) => {
+    if (type.includes('lecture')) return 'Lecture Halls';
+    if (type.includes('classroom')) return 'Classrooms';
+    if (type.includes('lab') || type.includes('workshop')) return 'Labs & Workshops';
+    if (type.includes('seminar')) return 'Seminar Halls';
+    if (type.includes('auditorium') || type.includes('outdoor')) return 'Auditorium & Outdoor';
+    return 'Other';
+  };
 
   const filtered = rooms.filter((r) => {
-    const matchesType = filterType === 'All' || r.type === filterType;
-    const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase()) || r.id.toLowerCase().includes(search.toLowerCase());
+    const cat = getCategory(r.type);
+    const matchesType = filterType === 'All' || cat === filterType;
+    const matchesSearch =
+      r.name.toLowerCase().includes(search.toLowerCase()) ||
+      r.id.toLowerCase().includes(search.toLowerCase()) ||
+      r.building.toLowerCase().includes(search.toLowerCase());
     return matchesType && matchesSearch;
   });
+
+  const activeCount = rooms.filter((r) => r.status === 'Active').length;
 
   return (
     <div className="space-y-4 pb-8 dashboard-anim-item">
@@ -31,37 +72,37 @@ export const RoomManagementPage: React.FC = () => {
           </div>
           <div>
             <h2 className="text-lg font-bold text-white font-display">Room Management</h2>
-            <p className="text-xs text-slate-300">Inspect 27 institutional rooms, seating capacities, and equipment telemetry</p>
+            <p className="text-xs text-slate-300">Official CIT Dataset: 27 Institutional Venues, Capacities & Accessibility Telemetry</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono font-bold text-cyan-300 bg-cyan-950/40 px-3 py-1.5 rounded-xl border border-cyan-400/30">
-            26 / 27 Operational
+            {loading ? 'Loading...' : `${activeCount} / ${rooms.length} Operational`}
           </span>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-64">
+        <div className="relative w-full sm:w-72">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search room ID or name..."
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl glass-input text-xs text-white outline-none"
+            placeholder="Search ID, venue name, or building..."
+            className="w-full pl-9 pr-3 py-1.5 rounded-xl glass-input text-xs text-slate-900 font-semibold caret-blue-600 outline-none"
           />
         </div>
 
         <div className="flex items-center gap-1.5 p-1 rounded-xl liquid-glass-navbar self-end sm:self-auto overflow-x-auto">
-          {['All', 'Lecture Hall', 'Computer Lab', 'Smart Theatre', 'Auditorium'].map((type) => (
+          {['All', 'Lecture Halls', 'Classrooms', 'Labs & Workshops', 'Seminar Halls', 'Auditorium & Outdoor'].map((type) => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                filterType === type ? 'bg-blue-600 text-white font-semibold' : 'text-slate-300 hover:text-white'
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all shrink-0 ${
+                filterType === type ? 'bg-blue-600 text-white font-semibold shadow-md' : 'text-slate-300 hover:text-white'
               }`}
             >
               {type}
@@ -71,48 +112,76 @@ export const RoomManagementPage: React.FC = () => {
       </div>
 
       {/* Rooms Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        {filtered.map((r) => (
-          <div key={r.id} className="p-4 rounded-2xl liquid-glass-card space-y-3">
-            <div className="flex items-start justify-between">
-              <div>
-                <span className="font-mono text-xs font-bold text-cyan-300">{r.id}</span>
-                <h4 className="text-sm font-bold text-white">{r.name}</h4>
-                <p className="text-xs text-slate-300">{r.block}</p>
+      {loading ? (
+        <div className="p-8 text-center text-slate-300 text-sm">Loading 27 campus venues from backend...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {filtered.map((r) => (
+            <div key={r.id} className="p-4 rounded-2xl liquid-glass-card space-y-3 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="font-mono text-xs font-bold text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-400/30">
+                      {r.id}
+                    </span>
+                    <h4 className="text-sm font-bold text-white mt-1">{r.name}</h4>
+                    <p className="text-xs text-slate-300">{r.building}</p>
+                  </div>
+
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${
+                      r.status === 'Active'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    }`}
+                  >
+                    {r.status}
+                  </span>
+                </div>
+
+                {r.status_details && r.status !== 'Active' && (
+                  <div className="flex items-center gap-1.5 text-[11px] text-amber-300 bg-amber-950/30 p-1.5 rounded-lg border border-amber-500/30">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{r.status_details}</span>
+                  </div>
+                )}
               </div>
 
-              <span
-                className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  r.status === 'Active'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                }`}
-              >
-                {r.status}
-              </span>
-            </div>
+              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-slate-200">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-white">Cap: {r.capacity}</span>
+                  {r.accessible ? (
+                    <span className="flex items-center gap-0.5 text-[10px] font-medium text-emerald-300 bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-500/30" title="Wheelchair Accessible (Ground Floor / Lift)">
+                      <Accessibility className="w-3 h-3" />
+                      <span>Lift/Ramp</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-medium text-rose-300 bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-500/30" title="No Lift (Second Floor) - H10 Enforced">
+                      No Lift
+                    </span>
+                  )}
+                </div>
 
-            <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-slate-200">
-              <span className="font-semibold text-white">Capacity: {r.capacity}</span>
-              <div className="flex items-center gap-2 text-cyan-300">
-                {r.ac && (
-                  <span title="Air Conditioned">
-                    <Wind className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-2 text-cyan-300">
+                  {r.ac && (
+                    <span title="Air Conditioned">
+                      <Wind className="w-3.5 h-3.5" />
+                    </span>
+                  )}
+                  {r.projector && (
+                    <span title="Digital Projector">
+                      <Monitor className="w-3.5 h-3.5" />
+                    </span>
+                  )}
+                  <span title="CIT Central Security Monitored">
+                    <Shield className="w-3.5 h-3.5" />
                   </span>
-                )}
-                {r.projector && (
-                  <span title="Digital Projector">
-                    <Monitor className="w-3.5 h-3.5" />
-                  </span>
-                )}
-                <span title="CIT Smart Access Node">
-                  <Shield className="w-3.5 h-3.5" />
-                </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
