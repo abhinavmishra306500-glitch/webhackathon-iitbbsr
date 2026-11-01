@@ -44,7 +44,14 @@ export const Campus3DScene: React.FC<Campus3DSceneProps> = ({
 
   const buildingGroupsRef = useRef<Map<string, THREE.Group>>(new Map());
   const hoveredBuildingRef = useRef<CampusBuilding | null>(null);
+  const selectedBuildingIdRef = useRef<string | null>(selectedBuildingId);
+  const lastBadgeRef = useRef<ProjectedBadge | null>(null);
   const [projectedBadges, setProjectedBadges] = useState<ProjectedBadge[]>([]);
+
+  // Keep selectedBuildingIdRef synced without re-triggering main effect
+  useEffect(() => {
+    selectedBuildingIdRef.current = selectedBuildingId;
+  }, [selectedBuildingId]);
 
   const dirLightRef = useRef<THREE.DirectionalLight | null>(null);
   const skyBounceLightRef = useRef<THREE.DirectionalLight | null>(null);
@@ -235,18 +242,15 @@ export const Campus3DScene: React.FC<Campus3DSceneProps> = ({
         fountainParticlesRef.current.geometry.attributes.position.needsUpdate = true;
       }
 
-      // Project 3D building coordinates to 2D screen positions only for active selected building
-      if (container && cameraRef.current) {
-        const w = container.clientWidth;
-        const h = container.clientHeight;
-        const halfW = w / 2;
-        const halfH = h / 2;
-
-        const newBadges: ProjectedBadge[] = [];
-
-        CAMPUS_BUILDINGS.forEach((bldg) => {
+      // Project 3D building coordinates to 2D screen positions ONLY for selected building
+      if (selectedBuildingIdRef.current && container && cameraRef.current) {
+        const selId = selectedBuildingIdRef.current;
+        const bldg = CAMPUS_BUILDINGS.find((b) => b.id === selId);
+        if (bldg) {
+          const halfW = container.clientWidth / 2;
+          const halfH = container.clientHeight / 2;
           tempVec.set(bldg.position[0], bldg.position[1] + 30, bldg.position[2]);
-          tempVec.project(cameraRef.current!);
+          tempVec.project(cameraRef.current);
 
           const isVisible =
             tempVec.z < 1 &&
@@ -255,24 +259,37 @@ export const Campus3DScene: React.FC<Campus3DSceneProps> = ({
             tempVec.y >= -1.1 &&
             tempVec.y <= 1.1;
 
-          newBadges.push({
-            id: bldg.id,
-            name: bldg.name,
-            code: bldg.code,
-            iconType: bldg.iconType,
-            x: tempVec.x * halfW + halfW,
-            y: -tempVec.y * halfH + halfH,
-            visible: isVisible,
-          });
-        });
+          const px = Math.round(tempVec.x * halfW + halfW);
+          const py = Math.round(-tempVec.y * halfH + halfH);
 
-        setProjectedBadges(newBadges);
+          if (
+            !lastBadgeRef.current ||
+            lastBadgeRef.current.id !== bldg.id ||
+            Math.abs(lastBadgeRef.current.x - px) > 1 ||
+            Math.abs(lastBadgeRef.current.y - py) > 1 ||
+            lastBadgeRef.current.visible !== isVisible
+          ) {
+            lastBadgeRef.current = {
+              id: bldg.id,
+              name: bldg.name,
+              code: bldg.code,
+              iconType: bldg.iconType,
+              x: px,
+              y: py,
+              visible: isVisible,
+            };
+            setProjectedBadges([lastBadgeRef.current]);
+          }
+        }
+      } else if (lastBadgeRef.current !== null) {
+        lastBadgeRef.current = null;
+        setProjectedBadges([]);
       }
 
       // Gentle building selection highlight
       buildingGroupsRef.current.forEach((grp, id) => {
         const isHovered = hoveredBuildingRef.current?.id === id;
-        const isSelected = selectedBuildingId === id;
+        const isSelected = selectedBuildingIdRef.current === id;
         const highlightBox = grp.getObjectByName('highlightBox');
         if (highlightBox && highlightBox instanceof THREE.Mesh) {
           highlightBox.visible = isHovered || isSelected;
@@ -297,7 +314,7 @@ export const Campus3DScene: React.FC<Campus3DSceneProps> = ({
         container.removeChild(renderer.domElement);
       }
     };
-  }, [selectedBuildingId]);
+  }, []);
 
   // Handle Day / Sunset / Night mode changes with rich atmospheric lighting
   useEffect(() => {
