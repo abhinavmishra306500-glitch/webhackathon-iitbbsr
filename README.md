@@ -1,109 +1,196 @@
 # CampusSync – Chilika Institute of Technology (CIT)
-### Smart Campus Scheduling & Venue Management System
-**IIT Bhubaneswar Web Hackathon Entry**
-
-A cinematic, liquid-transparent glassmorphism web platform designed and engineered for **Chilika Institute of Technology (CIT)**.
-
-![CIT CampusSync Preview](/public/assets/dashboard-ref.jpg)
+### Smart Campus Scheduling, Midsem Examination & Venue Management Platform
+**Official Submission for Web Hackathon**
 
 ---
 
-## 🌟 Key Highlights
+## 🏛️ System Architecture
 
-### 1. Cinematic CIT Login Gateway
-- **Realistic CIT Campus Background**: Features the actual Chilika Institute of Technology campus architecture, rotunda, and fountain.
-- **Ultra-Transparent Liquid Glassmorphism**: High-transparency crystal glass with Apple VisionOS-style refraction, specular highlights, and zero murky dark overlays.
-- **Micro-Animations (GSAP)**:
-  - Atmospheric floating light particles via HTML5 canvas.
-  - Camera-like subtle zoom and responsive mouse parallax (respects `prefers-reduced-motion`).
-  - Staggered form field entrance and interactive hover glows.
-- **Role-Based Authentication**:
-  - **Admin**: `admin@cit.ac.in` / `Admin@Cit2026`
-  - **Department Coordinator**: `coordinator.cse@cit.ac.in` / `Coord@Cse2026`
-  - **Faculty**: `faculty.sharma@cit.ac.in` / `Faculty@Cit2026`
-  - **Club Representative**: `zephyr.club@cit.ac.in` / `Zephyr@Cit2026`
-  - Quick-fill role switcher tabs for instant testing.
-
-### 2. Exact Reference Dashboard (Liquid Blue & Cyan Glass)
-Recreated directly from the reference design with:
-- **Top Navigation Bar**: Floating glass navbar with CampusSync branding, search pill, notification popover with active badges, dynamic role switcher, and logout trigger.
-- **Left Sidebar**: Tall glass sidebar with official circular CIT university seal, 10 role-filtered navigation modules, and a bottom luminous wave refraction SVG.
-- **Hero Area**: Cyan accent pillar with live formatted date pill.
-- **4 Statistics Cards**:
-  - `27 Rooms` (Building icon in cyan/blue glowing badge)
-  - `40 Faculty` (Users icon)
-  - `189 Sessions` (Layers icon)
-  - `14 Student Groups` (Graduation cap icon)
-- **3x3 Grid of 9 Feature Cards**:
-  1. **Timetable Management** – Generate, view and manage weekly timetables.
-  2. **Exam Scheduler** – Schedule and manage midsem examinations.
-  3. **Venue Booking** – Book venues, check availability and manage events.
-  4. **Rescheduling** – Automatically reschedule sessions and handle disruptions.
-  5. **AI Assistant** – Natural language scheduling, booking and queries.
-  6. **Approvals** – Review and approve booking and scheduling requests (**anti-self-approval rule enforced**).
-  7. **Room Management** – Manage 27 campus rooms, capacity, features and telemetry.
-  8. **Analytics** – View block utilization, conflicts and optimization reports.
-  9. **Dataset Management** – Upload, validate and manage institution datasets.
-
-### 3. Dedicated Interactive Module Pages
-Every card and sidebar option routes to its own fully functional, responsive module:
-- `/` or `/login`: Unauthenticated users land on the cinematic login gateway.
-- `/dashboard`: Overview dashboard matching reference layout.
-- `/timetable`: Day tabs (Mon-Sat), section filters (CSE-3A, CSE-5B), and real-time schedule grid.
-- `/exam-scheduler`: Midsem and Endsem seating plans and block allocations.
-- `/venue-booking`: Auditorium & lab booking form with instant status pipeline.
-- `/rescheduling`: AI clash resolution engine proposing slot swaps.
-- `/ai-assistant`: Conversational assistant for natural language scheduling queries.
-- `/approvals`: Role-protected request management with anti-self-approval validation.
-- `/rooms`: 27-room telemetry catalog with AC, projector, and capacity indicators.
-- `/analytics`: Block utilization bars and UGC faculty workload tracker.
-- `/datasets`: CSV/JSON institutional dataset upload and schema validator.
+```mermaid
+graph TD
+    User([User / Browser]) <--> Frontend[React 19 + Vite + Tailwind + Three.js 3D]
+    
+    Frontend <-->|REST API /api/*| Backend[FastAPI Backend - Port 8000]
+    Frontend <-->|AI Chat Proxy /api/ai/*| NodeServer[Node Express Proxy - Port 5050]
+    
+    Backend --> Solver[Google OR-Tools CP-SAT Solver]
+    Backend --> ExamEngine[Midsem Exam Bin-Packing Engine]
+    Backend --> BookingEngine[Spectra Week Priority Allocation Engine]
+    Backend --> DisruptionEngine[Minimal Movement Rescheduling Engine]
+    Backend --> NLPParser[English & Hinglish Requisition Parser]
+    Backend --> ValidatorRunner[Official validator.py Auditor]
+    
+    NodeServer --> GeminiLLM[Google Gemini LLM API]
+    
+    Solver --> Export1[(exports/schedule.json)]
+    DisruptionEngine --> Export2[(exports/schedule_after.json)]
+```
 
 ---
 
-## 🛠️ Technology Stack
+## 🌟 10 Core Capabilities (Full Problem Statement Compliance)
 
-- **Framework**: React 19 + Vite 6
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + Custom Liquid Glassmorphism Tokens
-- **Animations**: GSAP (GreenSock Animation Platform)
-- **Icons**: Lucide React
-- **Routing**: React Router v7
+1. **Clash-Free Timetable Generation (OR-Tools CP-SAT):**
+   - Formulates all 189 sessions (243 weekly teaching hours) across 27 rooms and 40 faculty.
+   - Enforces all **Hard Constraints** (`H1`–`H14`): faculty/group/room non-overlap, lab start periods (P2 or P6 only, 3 hours), lunch boundary (no crossing between P5 and P6), wheelchair accessibility (`H10`), elective basket slot parallel synchronization (`H11`), and faculty daily limit (max 4 hours/day `H12`).
+   - Minimizes soft penalties (`S1`–`S6`).
+   - **Validator Result: ZERO Hard Violations (`H1-H14: 0`).**
+
+2. **Midsem Examination Scheduling:**
+   - 41 midsem exams scheduled across exam week (`MON`–`SAT`) in `AM` (09:30–11:30) and `PM` (14:00–16:00).
+   - Enforces **Half-Capacity Rule** (`H5`): effective room capacity is halved (`capacity // 2`).
+   - Multi-room aggregation ensures `sum(half_cap) >= exam.size`.
+   - Rooms strictly validated for `"exam"` in `allowed_uses` (`E2`). Zero group clashes.
+   - **Validator Result: ZERO Hard Violations (`E1, E2, H3, H4, H5: 0`).**
+
+3. **Natural Language Venue Requisition (English & Hinglish):**
+   - Parses colloquial English and Hinglish requests (e.g. *"seminar hall kal shaam 6 baje, 2 ghante, 100 log, mic chahiye"*).
+   - Maps Hindi relative day `"kal"` to tomorrow, 6 PM to period `P10`, mic to `pa_system`.
+   - Identifies conflicts proactively (e.g. wheelchair access requested but named room `SH-2` is not accessible, suggests `SH-1`).
+   - Generates structured draft for user review and editing before final submission.
+
+4. **Spectra Week (Week 7) Priority-Based Booking Decisions:**
+   - Evaluates all 25 booking requests against hierarchical priority order:
+     `exam > regular_session > institute_event (5) > guest_lecture (4) > department_event (3) > club_event (2)`.
+   - Enforces **Role Category Capping** (e.g. club rep cannot claim institute event status).
+   - Tie-breaks via earlier submission timestamp.
+   - Automatically rejects officially withdrawn requests (`BR-04` / `cancellations.csv`).
+   - Generates meaningful decision reasons for approvals, alternatives, and rejections.
+   - **Zero Priority Inversions** verified by official validator.
+
+5. **Disruption Handling & Minimal Movement Rescheduling:**
+   - Ingests `sample_disruption.json` (faculty leave, room maintenance closure, session additions/removals).
+   - Employs stability optimization in CP-SAT to move the **fewest possible sessions**.
+   - **Result: Only 14 sessions moved out of 189** (175 sessions preserved in their exact original slot).
+   - Generates exact side-by-side diff requiring explicit Human Admin approval.
+
+6. **Multi-Dimensional Timetable Views & Room Telemetry:**
+   - Interactive timetable viewable by **Student Group** (e.g. `CSE-3`, `ECE-2`), by **Faculty** (e.g. `Dr. Manoranjan Sharma`), or by **Room** (e.g. `LH-1`).
+   - Real-time room telemetry across all 27 campus rooms with capacity, AC, projector, and equipment indicators.
+
+7. **Advisory AI Assistant (Google Gemini):**
+   - Natural language conversational assistant grounded with official `cit_public.json` entities.
+   - Strictly advisory: cannot autonomously approve bookings or mutate timetables. All actions require deterministic backend validation.
+
+8. **Decision Explanation Engine:**
+   - Explains scheduling rationale (e.g. why classes start at 8 AM, why `BR-09` for 1,200 seats was rejected, why `BR-04` was rejected due to withdrawal).
+
+9. **Official Validator & Schedule Exports:**
+   - Generated files committed to repository:
+     - `exports/schedule.json`
+     - `exports/schedule_after.json`
+   - Integrated with official `validator.py` via API and CLI.
+
+10. **Authorized Manual Scheduling:**
+    - Authorized roles can manually schedule events with real-time validation against all hard constraints.
 
 ---
 
-## 🚀 Getting Started
+## 👥 Demo Accounts (All 4 Roles)
+
+| Role | Email | Password | Primary Permissions |
+| :--- | :--- | :--- | :--- |
+| **Admin (Dean's Office)** | `admin@cit.ac.in` | `Admin@Cit2026` | Full platform control, timetable generation, disruption approval, demo data reset. |
+| **Department Coordinator** | `coordinator.cse@cit.ac.in` | `Coord@Cse2026` | Department session change requests, lab booking approvals, midsem hall oversight. |
+| **Faculty Member** | `faculty.sharma@cit.ac.in` | `Faculty@Cit2026` | Personal schedule view, leave/unavailability declaration, swap requests. |
+| **Club Representative** | `zephyr.club@cit.ac.in` | `Zephyr@Cit2026` | Venue requisition submission, cancellation, status tracking. |
+
+> **Judge Quick-Fill:** On the login page ([http://localhost:5180/login](http://localhost:5180/login)), click any role tab (Admin, Coordinator, Faculty, Club Rep) to instantly populate working demo credentials.
+
+---
+
+## 🚀 Setup & Execution Guide
 
 ### Prerequisites
-- Node.js (v18+)
-- npm
+- Python 3.10+ / 3.11+
+- Node.js 18+ / 20+
 
-### Installation
-
+### 1. Clone & Install Dependencies
 ```bash
-# Clone the repository
+# Clone repository
 git clone https://github.com/abhinavmishra306500-glitch/webhackathon-iitbbsr.git
-
-# Navigate into project directory
 cd webhackathon-iitbbsr
 
-# Install dependencies
+# Frontend & Node proxy dependencies
 npm install
 
-# Start Vite development server
-npm run dev
+# Python virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+pip install ortools fastapi uvicorn pydantic python-dotenv requests pytest sqlalchemy httpx
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-### Production Build
-
+### 2. Configure Environment Variables
+Copy template `.env.example` to `.env`:
 ```bash
-npm run build
+cp .env.example .env
+```
+Ensure `.env` contains:
+```env
+AI_API_KEY=your_gemini_api_key
+AI_PROVIDER=google_gemini
+AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+AI_MODEL=gemini-3.1-flash-lite-preview
+PORT=5050
+```
+
+### 3. Run Applications
+```bash
+# Terminal 1: FastAPI Core Engine (Port 8000)
+.venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
+
+# Terminal 2: AI Node Proxy (Port 5050)
+node server/index.js
+
+# Terminal 3: Liquid Glass Frontend (Port 5180)
+npm run dev -- --port 5180
+```
+Open **[http://localhost:5180](http://localhost:5180)** in your browser.
+
+---
+
+## 🧪 Automated Testing & Validation
+
+### Run Pytest Test Suite:
+```bash
+.venv/bin/pytest tests/test_backend.py -v
+```
+*(10 of 10 tests passing across all capabilities)*
+
+### Run Official Validator:
+```bash
+# Baseline Schedule Validation
+python3 CrunchWeek_StarterPack/validator.py \
+  --data CrunchWeek_StarterPack/data/cit_public.json \
+  --schedule exports/schedule.json
+
+# Disrupted Schedule Validation
+python3 CrunchWeek_StarterPack/validator.py \
+  --data CrunchWeek_StarterPack/data/cit_public.json \
+  --schedule exports/schedule_after.json \
+  --disruption CrunchWeek_StarterPack/examples/sample_disruption.json \
+  --baseline exports/schedule.json
+```
+
+**Official Validator Output:**
+```
+Dataset: cit-public-v1   Schedule says: cit-public-v1   Team: TechZephyr CIT
+Hard violations: 0  {}
+Soft penalty: 346  {'S1': 0, 'S2': 70, 'S3': 93, 'S4': 183, 'S5': 0, 'S6': 0}
+Bookings: score 66.0 | approved 22, alternatives 0, rejected 3, session overrides 0, priority inversions 0
+Exam soft penalty: 0
+
+--- After Disruption ---
+Hard violations: 0  {}
+Soft penalty: 331  {'S1': 0, 'S2': 82, 'S3': 78, 'S4': 171, 'S5': 0, 'S6': 0}
+Bookings: score 66.0 | approved 22, alternatives 0, rejected 3, session overrides 0, priority inversions 0
+Exam soft penalty: 0
+Stability: 14 sessions moved (13 changed time, 1 room only)
 ```
 
 ---
 
-## 🏛️ Institution
-**Chilika Institute of Technology (CIT)**  
-Autonomous Institution • NAAC A++ Accredited • Academic Session 2026–2027
+## ⚠️ Known Limitations
+1. **Elective Basket Scalability:** For basket slots containing >10 parallel courses, CP-SAT time limit should be set to >=60s to ensure full convergence.
+2. **Audio Hardware Feedback:** Automatic mic/PA conflict detection relies on declared room features in `cit_public.json`. Physical acoustic feedback cannot be simulated without venue audio hardware telemetry.
+3. **External Network Spikes:** In case of external LLM API rate limits, the fallback model chain automatically switches models, and manual booking remains 100% operational offline.
