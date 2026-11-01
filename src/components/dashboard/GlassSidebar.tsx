@@ -27,21 +27,23 @@ interface NavItem {
   allowedRoles: UserRole[];
 }
 
+const ALL_ROLES: UserRole[] = ['admin', 'coordinator', 'faculty', 'club_rep'];
+
 const NAV_ITEMS: NavItem[] = [
-  { name: 'Overview', path: '/', icon: Home, allowedRoles: ['admin', 'coordinator', 'faculty', 'club_rep'] },
-  { name: 'Timetable Management', path: '/timetable', icon: Calendar, allowedRoles: ['admin', 'coordinator', 'faculty'] },
-  { name: 'Exam Scheduler', path: '/exam-scheduler', icon: ClipboardList, allowedRoles: ['admin', 'coordinator'] },
-  { name: 'Venue Booking', path: '/venue-booking', icon: MapPin, allowedRoles: ['admin', 'coordinator', 'faculty', 'club_rep'] },
-  { name: '3D Campus Map', path: '/campus-3d', icon: Compass, allowedRoles: ['admin', 'coordinator', 'faculty', 'club_rep'] },
-  { name: 'Rescheduling', path: '/rescheduling', icon: RefreshCw, allowedRoles: ['admin', 'coordinator', 'faculty'] },
-  { name: 'AI Assistant', path: '/ai-assistant', icon: Sparkles, allowedRoles: ['admin', 'coordinator', 'faculty', 'club_rep'] },
-  { name: 'Approvals', path: '/approvals', icon: CheckCircle, allowedRoles: ['admin', 'coordinator', 'club_rep'] },
-  { name: 'Room Management', path: '/rooms', icon: Building2, allowedRoles: ['admin', 'coordinator'] },
-  { name: 'Analytics', path: '/analytics', icon: BarChart2, allowedRoles: ['admin', 'coordinator', 'faculty'] },
-  { name: 'Dataset Management', path: '/datasets', icon: Database, allowedRoles: ['admin'] },
+  { name: 'Overview', path: '/', icon: Home, allowedRoles: ALL_ROLES },
+  { name: 'Timetable Management', path: '/timetable', icon: Calendar, allowedRoles: ALL_ROLES },
+  { name: 'Exam Scheduler', path: '/exam-scheduler', icon: ClipboardList, allowedRoles: ALL_ROLES },
+  { name: 'Venue Booking', path: '/venue-booking', icon: MapPin, allowedRoles: ALL_ROLES },
+  { name: '3D Campus Map', path: '/campus-3d', icon: Compass, allowedRoles: ALL_ROLES },
+  { name: 'Rescheduling', path: '/rescheduling', icon: RefreshCw, allowedRoles: ALL_ROLES },
+  { name: 'AI Assistant', path: '/ai-assistant', icon: Sparkles, allowedRoles: ALL_ROLES },
+  { name: 'Approvals', path: '/approvals', icon: CheckCircle, allowedRoles: ALL_ROLES },
+  { name: 'Room Management', path: '/rooms', icon: Building2, allowedRoles: ALL_ROLES },
+  { name: 'Analytics', path: '/analytics', icon: BarChart2, allowedRoles: ALL_ROLES },
+  { name: 'Dataset Management', path: '/datasets', icon: Database, allowedRoles: ALL_ROLES },
 ];
 
-export const GlassSidebar: React.FC<GlassSidebarProps> = ({ currentRole = 'admin' }) => {
+export const GlassSidebar: React.FC<GlassSidebarProps> = ({ currentRole: _currentRole = 'admin' }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -50,10 +52,10 @@ export const GlassSidebar: React.FC<GlassSidebarProps> = ({ currentRole = 'admin
   return (
     <aside className="w-64 xl:w-72 h-[calc(100vh-2rem)] sticky top-4 rounded-3xl liquid-glass-sidebar p-4 xl:p-5 flex flex-col justify-between shrink-0 select-none z-30 overflow-hidden">
       {/* Top University Branding */}
-      <div>
+      <div className="flex-1 flex flex-col min-h-0">
         <div
           onClick={() => navigate('/')}
-          className="flex items-center gap-3 pb-5 pt-1 border-b border-white/10 cursor-pointer group"
+          className="flex items-center gap-3 pb-4 pt-1 border-b border-white/10 cursor-pointer group shrink-0"
         >
           {/* Circular CIT Seal matching reference */}
           <div className="w-11 h-11 rounded-full p-1 bg-gradient-to-tr from-blue-600/60 to-cyan-400/40 border border-cyan-300/50 shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center shrink-0">
@@ -73,9 +75,9 @@ export const GlassSidebar: React.FC<GlassSidebarProps> = ({ currentRole = 'admin
           </div>
         </div>
 
-        {/* Navigation Options List */}
-        <nav className="mt-4 space-y-1 overflow-y-auto max-h-[calc(100vh-250px)] pr-1">
-          {NAV_ITEMS.filter((item) => item.allowedRoles.includes(currentRole)).map((item) => {
+        {/* Navigation Options List - All 11 Modules Always Accessible */}
+        <nav className="mt-3 space-y-1 overflow-y-auto flex-1 pr-1">
+          {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive =
               item.path === '/'
@@ -86,13 +88,13 @@ export const GlassSidebar: React.FC<GlassSidebarProps> = ({ currentRole = 'admin
               <button
                 key={item.name}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-200 group text-left ${
+                className={`w-full flex items-center justify-between px-3 py-2 xl:px-3.5 xl:py-2.5 rounded-2xl text-xs font-semibold transition-all duration-200 group text-left ${
                   isActive
-                    ? 'sidebar-active-tab text-white'
+                    ? 'sidebar-active-tab text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]'
                     : 'text-slate-200 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <Icon
                     className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${
                       isActive ? 'text-white' : 'text-cyan-300/90'
