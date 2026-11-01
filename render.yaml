@@ -5,13 +5,13 @@ services:
     runtime: python
     region: oregon
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
 
-  # 2. Vite React + Three.js Frontend Static Site (Global CDN, no region)
+  # 2. Vite React + Three.js Frontend Static Site (Global CDN)
   - type: web
     name: techzephyr-frontend
     runtime: static
