@@ -11,12 +11,10 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.9
 
-  # 2. Vite React + Three.js Frontend Static Site
+  # 2. Vite React + Three.js Frontend Static Site (Global CDN, no region)
   - type: web
     name: techzephyr-frontend
     runtime: static
-    region: oregon
-    plan: free
     buildCommand: npm run build
     staticPublishPath: ./dist
     routes:
