@@ -539,7 +539,7 @@ function buildPhotorealisticGround(scene: THREE.Scene) {
 function createSignTexture(
   title: string,
   subtitle?: string,
-  primaryColor = '#f59e0b',
+  primaryColor = '#fde047',
   bgColor = '#0a1128'
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
@@ -1397,35 +1397,36 @@ function buildAllRealisticBuildings(scene: THREE.Scene, buildingMap: Map<string,
         pediment.rotation.y = Math.PI / 4;
         grp.add(pediment);
 
-        // Monumental Portico Frieze Signboard with "CIT"
-        const adminSignTex = createSignTexture('CIT', 'CHILIKA INSTITUTE OF TECHNOLOGY', '#f59e0b', '#0a1128');
+        // Monumental Portico Frieze Signboard with "CIT" in Bright Yellow
+        const adminSignTex = createSignTexture('CIT', 'CHILIKA INSTITUTE OF TECHNOLOGY', '#fde047', '#0a1128');
         const adminSignMat = new THREE.MeshStandardMaterial({
           map: adminSignTex,
-          roughness: 0.28,
-          metalness: 0.35,
+          roughness: 0.25,
+          metalness: 0.2,
         });
         const adminSignBoard = new THREE.Mesh(new THREE.BoxGeometry(24, 4.4, 0.7), adminSignMat);
         adminSignBoard.position.set(0, 19.3, 20.1);
         adminSignBoard.castShadow = true;
         grp.add(adminSignBoard);
 
-        // 3D Metallic Golden Relief Lettering "CIT" on Pediment Cornice
-        const goldLetterMat = new THREE.MeshStandardMaterial({
-          color: 0xf59e0b,
-          metalness: 0.9,
-          roughness: 0.16,
+        // 3D Vivid Yellow Relief Lettering "CIT" on Pediment Cornice
+        const yellowLetterMat = new THREE.MeshStandardMaterial({
+          color: 0xfde047, // Vivid bright architectural yellow
+          emissive: 0x423802, // Subtle warm illumination
+          roughness: 0.22,
+          metalness: 0.45,
         });
-        const cit3DLetters = create3DLettersCIT(goldLetterMat);
+        const cit3DLetters = create3DLettersCIT(yellowLetterMat);
         cit3DLetters.position.set(0, 21.6, 20.4);
         cit3DLetters.scale.set(0.95, 0.95, 0.95);
         grp.add(cit3DLetters);
 
-        // Rooftop Monumental "CIT" Sign (Tilted for clear elevated aerial camera visibility)
-        const roofCitTex = createSignTexture('CIT', 'UNIVERSITY HEADQUARTERS', '#f59e0b', '#0f172a');
+        // Rooftop Monumental "CIT" Sign in Vivid Yellow (Tilted for clear elevated aerial camera visibility)
+        const roofCitTex = createSignTexture('CIT', 'UNIVERSITY HEADQUARTERS', '#fde047', '#0f172a');
         const roofCitMat = new THREE.MeshStandardMaterial({
           map: roofCitTex,
           roughness: 0.22,
-          metalness: 0.45,
+          metalness: 0.25,
         });
         const roofCitSign = new THREE.Mesh(new THREE.BoxGeometry(20, 5.0, 1.2), roofCitMat);
         roofCitSign.position.set(0, 27.5, 12);
@@ -1433,7 +1434,7 @@ function buildAllRealisticBuildings(scene: THREE.Scene, buildingMap: Map<string,
         roofCitSign.castShadow = true;
         grp.add(roofCitSign);
 
-        const roof3DLetters = create3DLettersCIT(goldLetterMat);
+        const roof3DLetters = create3DLettersCIT(yellowLetterMat);
         roof3DLetters.position.set(0, 27.5, 12.8);
         roof3DLetters.rotation.x = -0.28;
         roof3DLetters.scale.set(1.15, 1.15, 1.15);
