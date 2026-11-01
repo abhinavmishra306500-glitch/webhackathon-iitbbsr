@@ -905,7 +905,12 @@ Your role is to assist students, faculty, coordinators, and administrators with 
         "reply": "CampusSync AI Assistant (CIT): In accordance with CIT institutional policies, all 27 venues, 40 faculty schedules, 189 classes, and 41 midsem exams have been evaluated with zero hard constraint violations.",
         "model": "cit-safety-rule-engine",
         "actionCard": action_card
-    }
+# --- 11. SERVE FRONTEND (SPA) IN PRODUCTION / DOCKER / HUGGING FACE ---
+from fastapi.staticfiles import StaticFiles
+
+dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dist"))
+if os.path.exists(dist_dir):
+    app.mount("/", StaticFiles(directory=dist_dir, html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
