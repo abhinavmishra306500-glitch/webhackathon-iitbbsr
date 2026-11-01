@@ -100,6 +100,25 @@ def load_or_generate_baseline():
 def startup_event():
     load_or_generate_baseline()
 
+@app.get("/")
+def root():
+    return {
+        "status": "online",
+        "service": "CIT CampusSync Unified Backend API",
+        "institution": "Chilika Institute of Technology",
+        "interactive_docs": "/docs",
+        "redoc": "/redoc",
+        "endpoints": {
+            "health": "/api/health",
+            "rooms": "/api/rooms",
+            "timetable_view": "/api/timetable/view",
+            "exam_schedule": "/api/exams/view",
+            "fest_bookings": "/api/bookings/fest",
+            "room_utilization": "/api/analytics/utilization",
+            "dataset_summary": "/api/dataset/summary"
+        }
+    }
+
 # --- 1. HEALTH & METRICS ---
 @app.get("/api/health")
 def health():
