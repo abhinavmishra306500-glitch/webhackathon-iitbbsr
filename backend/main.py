@@ -924,6 +924,8 @@ Your role is to assist students, faculty, coordinators, and administrators with 
         "reply": "CampusSync AI Assistant (CIT): In accordance with CIT institutional policies, all 27 venues, 40 faculty schedules, 189 classes, and 41 midsem exams have been evaluated with zero hard constraint violations.",
         "model": "cit-safety-rule-engine",
         "actionCard": action_card
+    }
+
 # --- 11. SERVE FRONTEND (SPA) IN PRODUCTION / DOCKER / HUGGING FACE ---
 from fastapi.staticfiles import StaticFiles
 
