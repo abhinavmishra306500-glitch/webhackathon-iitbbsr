@@ -535,6 +535,115 @@ function buildPhotorealisticGround(scene: THREE.Scene) {
   scene.add(hedgeBorder);
 }
 
+// Helper for high-definition architectural signage textures
+function createSignTexture(
+  title: string,
+  subtitle?: string,
+  primaryColor = '#f59e0b',
+  bgColor = '#0a1128'
+): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 160;
+  const ctx = canvas.getContext('2d')!;
+
+  // Background with subtle glossy bevel
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, 512, 160);
+
+  // Outer polished gold border
+  ctx.strokeStyle = primaryColor;
+  ctx.lineWidth = 6;
+  ctx.strokeRect(6, 6, 500, 148);
+
+  // Inner decorative border
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(12, 12, 488, 136);
+
+  // Main embossed text
+  ctx.fillStyle = primaryColor;
+  ctx.font = '900 82px "Outfit", "Inter", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetY = 4;
+  ctx.fillText(title, 256, subtitle ? 62 : 80);
+
+  // Subtitle
+  if (subtitle) {
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.font = '700 20px "Outfit", "Inter", sans-serif';
+    ctx.fillStyle = '#f8fafc';
+    ctx.letterSpacing = '2px';
+    ctx.fillText(subtitle, 256, 118);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 8;
+  return texture;
+}
+
+// Helper to construct 3D metallic relief letters 'C I T'
+function create3DLettersCIT(goldMat: THREE.Material): THREE.Group {
+  const lettersGroup = new THREE.Group();
+
+  // Letter C (at x = -4.2)
+  const cGroup = new THREE.Group();
+  cGroup.position.set(-4.2, 0, 0);
+  const cSpine = new THREE.Mesh(new THREE.BoxGeometry(0.7, 3.4, 0.5), goldMat);
+  cSpine.position.set(-1.0, 1.7, 0);
+  cSpine.castShadow = true;
+  cGroup.add(cSpine);
+
+  const cTop = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.7, 0.5), goldMat);
+  cTop.position.set(0.1, 3.05, 0);
+  cTop.castShadow = true;
+  cGroup.add(cTop);
+
+  const cBottom = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.7, 0.5), goldMat);
+  cBottom.position.set(0.1, 0.35, 0);
+  cBottom.castShadow = true;
+  cGroup.add(cBottom);
+  lettersGroup.add(cGroup);
+
+  // Letter I (at x = 0)
+  const iGroup = new THREE.Group();
+  iGroup.position.set(0, 0, 0);
+  const iSpine = new THREE.Mesh(new THREE.BoxGeometry(0.8, 3.4, 0.5), goldMat);
+  iSpine.position.set(0, 1.7, 0);
+  iSpine.castShadow = true;
+  iGroup.add(iSpine);
+
+  const iTop = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.6, 0.5), goldMat);
+  iTop.position.set(0, 3.1, 0);
+  iTop.castShadow = true;
+  iGroup.add(iTop);
+
+  const iBottom = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.6, 0.5), goldMat);
+  iBottom.position.set(0, 0.3, 0);
+  iBottom.castShadow = true;
+  iGroup.add(iBottom);
+  lettersGroup.add(iGroup);
+
+  // Letter T (at x = 4.2)
+  const tGroup = new THREE.Group();
+  tGroup.position.set(4.2, 0, 0);
+  const tSpine = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.8, 0.5), goldMat);
+  tSpine.position.set(0, 1.4, 0);
+  tSpine.castShadow = true;
+  tGroup.add(tSpine);
+
+  const tTop = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.7, 0.5), goldMat);
+  tTop.position.set(0, 3.05, 0);
+  tTop.castShadow = true;
+  tGroup.add(tTop);
+  lettersGroup.add(tGroup);
+
+  return lettersGroup;
+}
+
 // 2. Asphalt Roads, Avenues, Curbs, and Grand CIT Entrance Portal
 function buildRoadNetworkAndEntrance(scene: THREE.Scene) {
   const roadMat = new THREE.MeshStandardMaterial({
@@ -633,11 +742,6 @@ function buildRoadNetworkAndEntrance(scene: THREE.Scene) {
     roughness: 0.6,
     metalness: 0.15,
   });
-  const goldSignMat = new THREE.MeshStandardMaterial({
-    color: 0xf59e0b,
-    metalness: 0.85,
-    roughness: 0.22,
-  });
 
   // Left & Right Monumental Stone Pylons
   const pL = new THREE.Mesh(new THREE.BoxGeometry(6.0, 19, 6.0), gateStoneMat);
@@ -656,8 +760,14 @@ function buildRoadNetworkAndEntrance(scene: THREE.Scene) {
   header.castShadow = true;
   gateGroup.add(header);
 
-  // Sign Board: "CIT - CHILIKA INSTITUTE OF TECHNOLOGY"
-  const signBoard = new THREE.Mesh(new THREE.BoxGeometry(34, 3.2, 5.2), goldSignMat);
+  // Sign Board with crisp texture: "CIT - CHILIKA INSTITUTE OF TECHNOLOGY"
+  const gateSignTex = createSignTexture('CIT', 'CHILIKA INSTITUTE OF TECHNOLOGY');
+  const gateSignMat = new THREE.MeshStandardMaterial({
+    map: gateSignTex,
+    metalness: 0.4,
+    roughness: 0.28,
+  });
+  const signBoard = new THREE.Mesh(new THREE.BoxGeometry(34, 3.6, 5.2), gateSignMat);
   signBoard.position.set(0, 17.5, 0.1);
   gateGroup.add(signBoard);
 
@@ -1286,6 +1396,48 @@ function buildAllRealisticBuildings(scene: THREE.Scene, buildingMap: Map<string,
         pediment.position.set(0, 20.5, 19);
         pediment.rotation.y = Math.PI / 4;
         grp.add(pediment);
+
+        // Monumental Portico Frieze Signboard with "CIT"
+        const adminSignTex = createSignTexture('CIT', 'CHILIKA INSTITUTE OF TECHNOLOGY', '#f59e0b', '#0a1128');
+        const adminSignMat = new THREE.MeshStandardMaterial({
+          map: adminSignTex,
+          roughness: 0.28,
+          metalness: 0.35,
+        });
+        const adminSignBoard = new THREE.Mesh(new THREE.BoxGeometry(24, 4.4, 0.7), adminSignMat);
+        adminSignBoard.position.set(0, 19.3, 20.1);
+        adminSignBoard.castShadow = true;
+        grp.add(adminSignBoard);
+
+        // 3D Metallic Golden Relief Lettering "CIT" on Pediment Cornice
+        const goldLetterMat = new THREE.MeshStandardMaterial({
+          color: 0xf59e0b,
+          metalness: 0.9,
+          roughness: 0.16,
+        });
+        const cit3DLetters = create3DLettersCIT(goldLetterMat);
+        cit3DLetters.position.set(0, 21.6, 20.4);
+        cit3DLetters.scale.set(0.95, 0.95, 0.95);
+        grp.add(cit3DLetters);
+
+        // Rooftop Monumental "CIT" Sign (Tilted for clear elevated aerial camera visibility)
+        const roofCitTex = createSignTexture('CIT', 'UNIVERSITY HEADQUARTERS', '#f59e0b', '#0f172a');
+        const roofCitMat = new THREE.MeshStandardMaterial({
+          map: roofCitTex,
+          roughness: 0.22,
+          metalness: 0.45,
+        });
+        const roofCitSign = new THREE.Mesh(new THREE.BoxGeometry(20, 5.0, 1.2), roofCitMat);
+        roofCitSign.position.set(0, 27.5, 12);
+        roofCitSign.rotation.x = -0.28;
+        roofCitSign.castShadow = true;
+        grp.add(roofCitSign);
+
+        const roof3DLetters = create3DLettersCIT(goldLetterMat);
+        roof3DLetters.position.set(0, 27.5, 12.8);
+        roof3DLetters.rotation.x = -0.28;
+        roof3DLetters.scale.set(1.15, 1.15, 1.15);
+        grp.add(roof3DLetters);
 
         // Symmetrical Facade Multi-Tier Windows on Front
         addFacadeWindows(grp, [-18, 12, 17], 'south', 16, 14, 4, 3, blueGlassMat, frameMat);
